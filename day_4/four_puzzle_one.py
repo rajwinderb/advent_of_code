@@ -66,31 +66,39 @@ you choose that board?
 """
 
 
+# class for a single bingo board
 class BingoBoard:
 
     def __init__(self, numbers):
+        # list of list for the board numbers
         self.numbers = [int(n) for n in numbers.replace("\n", " ").split()]
+        # empty set for the "marked" numbers
         self.marked = set()
 
     def mark(self, n):
+        # if the number is on the board add it to marked and check if the board wins
         if n in self.numbers:
             self.marked.add(n)
             return self.check_win()
         return False
 
     def get_score(self):
+        # score is sum of unmarked numbers
         return sum(self.marked.symmetric_difference(self.numbers))
 
     def check_win(self):
+        # wins if there is a fully marked row or column
         return self.check_rows() or self.check_columns()
 
     def check_rows(self):
+        # check if a full row is marked
         for i in range(0, 21, 5):
             if self.marked.issuperset(self.numbers[i:i + 5]):
                 return True
         return False
 
     def check_columns(self):
+        # check if a full column is markeds
         for i in range(5):
             if self.marked.issuperset(self.numbers[i::5]):
                 return True
@@ -99,25 +107,35 @@ class BingoBoard:
 
 def get_boards_and_nums(filename):
     with open(filename) as file:
+        # split by line break
         data = file.read().split("\n\n")
+    # first line is the drawn numbers
     drawn_numbers = [int(n) for n in data[0].split(",")]
-    # so we can pop from the start
+    # so we can pop from the start of the drawn numbers
     drawn_numbers.reverse()
+    # list of bingo board objects
     boards = [BingoBoard(numbers) for numbers in data[1:]]
     return drawn_numbers, boards
 
 
 def main():
     drawn_numbers, boards = get_boards_and_nums('../inputs/four_puzzle_one_input.txt')
+    # create variable for the winning board
     winning_board = None
+    # while we are drawing numbers
     while drawn_numbers:
+        # pop the next number off the drawn numbers and save the number to use
         n = drawn_numbers.pop()
+        # for each board
         for board in boards:
+            # mark which number has been chosen if there and return if it wins
             if board.mark(n):
+                # if the board wins then save it
                 winning_board = board
+        # if theres a winning board print the score * n and end the loop
         if winning_board is not None:
-            boards.remove(winning_board)
             print(winning_board.get_score() * n)
+            return winning_board.get_score() * n
 
 
 if __name__ == '__main__':
